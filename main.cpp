@@ -6,6 +6,7 @@
 
 void imprimirPatron1();
 void imprimirPatron2();
+void imprimirPatron4();
 void inicializarMatriz(char matriz[8][8]);
 void imprimirMatriz(char matriz[8][8]);
 
@@ -15,6 +16,7 @@ void imprimirMatriz(char matriz[8][8]);
 int main() {
     imprimirPatron1();
     imprimirPatron2();
+    imprimirPatron4();
     return 0;
 }
 
@@ -74,4 +76,26 @@ void imprimirPatron2() {
     imprimirMatriz(matriz);
 }
 
+void imprimirPatron4() {
+    char matriz[8][8];
+
+    inicializarMatriz(matriz);
+
+    //  Primera mitad
+    for (int i=0; i<4;i++){
+        for(int j=i; j<i+4;j++){
+            matriz[i][j] = '*';
+        }
+    }
+
+    // Segunda mitad
+    for (int i=7; i>3;i--){
+        for(int j=0;j<4;j++)
+            matriz[i][7-i+j] = '*';
+
+
+    }
+
+    imprimirMatriz(matriz);
+}
 
