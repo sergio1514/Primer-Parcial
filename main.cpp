@@ -4,17 +4,40 @@
 
 #include <iostream>
 
+void imprimirPatron1();
+void imprimirPatron2();
+void inicializarMatriz(char matriz[8][8]);
+void imprimirMatriz(char matriz[8][8]);
 
 
-void imprimirPatron() {
-    char matriz[8][8];
 
-    // Inicio de la matriz 8x8 con espacios en blanco
+
+int main() {
+    imprimirPatron1();
+    imprimirPatron2();
+    return 0;
+}
+
+void inicializarMatriz(char matriz[8][8]) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             matriz[i][j] = ' ';
         }
     }
+}
+
+void imprimirMatriz(char matriz[8][8]) {
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            std::cout << matriz[i][j];
+        }
+        std::cout << std::endl;
+    }
+}
+
+void imprimirPatron1() {
+    char matriz[8][8];
+    inicializarMatriz(matriz);
 
     int numAsteriscos = 2;
 
@@ -35,15 +58,20 @@ void imprimirPatron() {
     }
 
     // Impresion de la matriz de 8x8 con el patron 1.
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            std::cout << matriz[i][j];
-        }
-        std::cout << std::endl;
-    }
+    imprimirMatriz(matriz);
 }
 
-int main() {
-    imprimirPatron();
-    return 0;
+
+void imprimirPatron2() {
+    char matriz[8][8];
+    inicializarMatriz(matriz);
+
+    for (int i=0; i<8;i++){
+        matriz[i][i] = '*';
+        matriz[i][7-i] = '*';
+    }
+
+    imprimirMatriz(matriz);
 }
+
+
