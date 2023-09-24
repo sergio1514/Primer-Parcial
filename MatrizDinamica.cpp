@@ -1,3 +1,6 @@
+
+//Nueva funcion en C++ para geberar patrones con matriz dinamica 8x8
+
 #include <iostream>
 
 void imprimirPatron1();
