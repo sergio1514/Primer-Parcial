@@ -1,0 +1,359 @@
+ 	int pinData = 2;
+int pinLatch = 3;
+int pinClock = 4;
+
+int *ptrPatrones;
+float *ptrTiempo;
+
+// Función verificacion(), PRUEBA LOS LED.
+void verificacion() {
+  unsigned long startTime = millis(); // ALMACENA EL TIEMPO.
+  unsigned long currentTime = startTime;
+
+  while (currentTime - startTime < 6000) { // ENCIENDE Y APAGA 6 SEG.
+    shiftOut(pinData, pinClock, LSBFIRST, 255); // PRENDE C/U DE LOS LED.
+    digitalWrite(pinLatch, HIGH);
+    digitalWrite(pinLatch, LOW);
+    delay(600); // ESPERA 0.6 SEG.
+
+    shiftOut(pinData, pinClock, LSBFIRST, 0); // APAGA LOS LEDs.
+    digitalWrite(pinLatch, HIGH);
+    digitalWrite(pinLatch, LOW);
+    delay(600); // ESPERA 0.6 SEG.
+
+    currentTime = millis(); // TIEMPO ACTUALIZADO.
+  }
+
+  // APAGADO DE LED.
+  imagen(0, 0, 0, 0, 0, 0, 0, 0);
+}
+
+// Función imagen(), PARA INTRODUCIR PATRONES
+void imagen(int aled, int bled, int cled, int dled, int eled, int fled, int gled, int hled) {
+  shiftOut(pinData, pinClock, LSBFIRST, hled);
+  shiftOut(pinData, pinClock, LSBFIRST, gled);
+  shiftOut(pinData, pinClock, LSBFIRST, fled);
+  shiftOut(pinData, pinClock, LSBFIRST, eled);
+  shiftOut(pinData, pinClock, LSBFIRST, dled);
+  shiftOut(pinData, pinClock, LSBFIRST, cled);
+  shiftOut(pinData, pinClock, LSBFIRST, bled);
+  shiftOut(pinData, pinClock, LSBFIRST, aled);
+  digitalWrite(pinLatch, HIGH);
+  digitalWrite(pinLatch, LOW);
+}
+
+// Función ingreso(), DATOS PUERTO SERIAL.
+void ingreso(char ing[8]) {
+  int verif = 0, posicion = 0;
+  Serial.println("INGRESAR DATO: ");
+  while (true) {
+    if (Serial.available()) {
+      posicion = 0;
+      while (Serial.available() > 0) {
+        delay(50);
+        ing[posicion] = Serial.read();
+        posicion++;
+      }
+      Serial.print("INGRESADO: ");
+      Serial.println(ing);
+      if (ing[0] == 'v') { // Cambiamos 'test' a 'v'
+        verificacion();
+        for (int i = 0; i <= posicion; i++) {
+          ing[i] = NULL;
+        }
+      } else {
+        break;
+      }
+    }
+  }
+}
+
+// ARREGLO DE BINARIO A DECIMAL.
+int BinToInt(char ing[8]) {
+  int i = 0;
+  int n = 0;
+
+  while (ing[i] == '0' || ing[i] == '1') {
+    if (ing[i] == '0')
+      n <<= 1;
+    else {
+      n ^= 1;
+      n <<= 1;
+    }
+    ++i;
+  }
+  n >>= 1;
+  return (n);
+}
+
+// PUBLIK -- IMPRIME PATRONES.
+void publik(int patrones, float tiempo) {
+  int cantidad = 0;
+  char patron[9] = {};
+  int patronA;
+  cantidad = (patrones * 8) - 1;
+  int *array = new int[cantidad + 1];
+
+  int aux = 0;
+  int tiempoaux = int(tiempo * 1000.0);
+
+  for (int i = 0; i < patrones * 8; i++) {
+    ingreso(patron);
+    patronA = BinToInt(patron);
+    array[aux] = patronA;
+    aux = aux + 1;
+    if ((i + 1) % 8 == 0) {
+      Serial.println("DATO INGRESADO");
+    }
+  }
+  while (true) {
+    for (int k = 0; k < (patrones * 8) - 1; k = k + 8) {
+      imagen(array[k], array[k + 1], array[k + 2], array[k + 3], array[k + 4], array[k + 5], array[k + 6], array[k + 7]);
+      delay(tiempoaux);
+    }
+    if (patrones == 1) {
+      break;
+    }
+  }
+
+  // Libera la memoria dinámica
+  delete[] array;
+}
+
+void setup() {
+  pinMode(pinData, OUTPUT);
+  pinMode(pinLatch, OUTPUT);
+  pinMode(pinClock, OUTPUT);
+  
+  // Inicializar los pines en estado bajo (apagado)
+  digitalWrite(pinData, LOW);
+  digitalWrite(pinLatch, LOW);
+  digitalWrite(pinClock, LOW);
+  
+  Serial.begin(9600); // Iniciar comunicación serial
+}
+
+void loop() {
+  int opcion;
+  char *aux = new char[5];
+  
+  Serial.println("\n\n\t\t\tMATRIZ 8X8");
+  Serial.println("\t\t\t------------");
+  Serial.println("\n\t1. VERIFICACION DE 64 LEDS MATRIX");
+  Serial.println("\t2. PATRON 1.");
+  Serial.println("\t3. PATRON 2.");
+  Serial.println("\t4. PATRON 3.");
+  Serial.println("\t5. PATRON 4.");
+  Serial.println("\t6. PATRON 1, 2, 3 y 4 cada 4 segundos.");
+  Serial.println("\t7. Ingresar PATRON por serial.");
+  Serial.println("\t0. SALIR");
+  Serial.println("\n\tIngrese una opcion: ");
+  
+  while (!Serial.available()) {
+    // Espera a que el usuario ingrese una opción
+  }
+  
+  opcion = Serial.parseInt();
+  Serial.println(opcion);
+  
+  switch (opcion) {
+    case 1:
+      verificacion();
+      break;
+      
+    case 2:
+      Serial.println("\t PATRON 1.");
+      imprimirPatron1();
+      break;
+      
+    case 3:
+      Serial.println("\t PATRON 2.");
+      imprimirPatron2();
+      break;
+      
+    case 4:
+      Serial.println("\t PATRON 3.");
+      imprimirPatron3();
+      break;
+      
+    case 5:
+      Serial.println("\t PATRON 4.");
+      imprimirPatron4();
+      break;
+      
+    case 6:
+ 
+    break;
+      
+    case 7:
+        Serial.println("NUMERO DE PATRONES: ");
+        ingreso(aux);
+        *ptrPatrones = atoi(aux);
+        Serial.print("No. PATRONES: ");
+        Serial.println(*ptrPatrones);
+
+        delete[] aux;
+
+        if (*ptrPatrones != 1) {
+          Serial.println("TIEMPO: ");
+          aux = new char[5]; // Reasigna memoria dinámica
+          ingreso(aux);
+          *ptrTiempo = atof(aux);
+          Serial.print("TIEMPO :");
+          Serial.println(*ptrTiempo);
+          delete[] aux;
+        }
+
+        Serial.println("INTRODUCIR PATRONES.");
+        publik(*ptrPatrones, *ptrTiempo);
+
+        Serial.println("EMPEZAR NUEVAMENTE.");
+      break;
+      
+    case 0:
+      // Salir del programa
+      Serial.println("Saliendo del programa.");
+      exit(0);
+      break;
+      
+    default:
+      Serial.println("Opción no válida. Intente de nuevo.");
+  }  
+}
+
+void ledWrite(int ledState) {
+  shiftOut(pinData, pinClock, LSBFIRST, ledState);
+  digitalWrite(pinLatch, HIGH);
+  digitalWrite(pinLatch, LOW);
+}
+// Función para imprimir patrones en la matriz LED
+void imprimirPatron1() {
+    char matriz[8][8];
+    inicializarMatriz(matriz);
+
+    int numAsteriscos = 2;
+
+    // LLenar la mitad izquierda de la matriz con asteriscos de acuerdo al patrón 1
+    for (int i = 0; i < 8; i++) {
+        int espacioInicial = (8 - numAsteriscos) / 2;
+
+        for (int j = espacioInicial; j < espacioInicial + numAsteriscos; j++) {
+            matriz[i][j] = '1';
+        }
+
+        // Aumentar y disminuir la cantidad de asteriscos según la fila de acuerdo al patrón 1.
+        if (i < 3) {
+            numAsteriscos += 2;
+        } else if (i > 3) {
+            numAsteriscos -= 2;
+        }
+    }
+
+    imprimirMatriz(matriz);
+}
+
+
+
+void imprimirPatron2() {
+    char matriz[8][8];
+    inicializarMatriz(matriz);
+
+    for (int i=0; i<8;i++){
+        matriz[i][i] = '1';
+        matriz[i][7-i] = '1';
+    }
+    imprimirMatriz(matriz);
+}
+
+void imprimirPatron3() {
+    char matriz[8][8];
+
+    inicializarMatriz(matriz);
+
+    // Llenar la matriz con el patrón
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            if ((i / 2) % 2 == 0) {
+                if ((j / 2) % 2 == 0) {
+                    matriz[i][j] = '1';
+                } else {
+                    matriz[i][j] = '0';
+                }
+            } else {
+                if ((j / 2) % 2 == 0) {
+                    matriz[i][j] = '0';
+                } else {
+                    matriz[i][j] = '1';
+                }
+            }
+        }
+    }
+    imprimirMatriz(matriz);
+}
+
+void imprimirPatron4() {
+    char matriz[8][8];
+
+    inicializarMatriz(matriz);
+
+    //  Primera mitad
+    for (int i=0; i<4;i++){
+        for(int j=i; j<i+4;j++){
+            matriz[i][j] = '*';
+        }
+    }
+
+    // Segunda mitad
+    for (int i=7; i>3;i--){
+        for(int j=0;j<4;j++)
+            matriz[i][7-i+j] = '*';
+    }
+    imprimirMatriz(matriz);
+}
+
+// Función para inicializar la matriz
+void inicializarMatriz(char matriz[8][8]) {
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            matriz[i][j] = '0';
+        }
+    }
+}
+
+// Función para imprimir la matriz en la matriz LED
+void imprimirMatriz(char matriz[8][8]) {
+  for (int i = 0; i < 8; i++) {
+    imagen(matriz[i][0], matriz[i][1], matriz[i][2], matriz[i][3], matriz[i][4], matriz[i][5], matriz[i][6], matriz[i][7]);
+    delay(*ptrTiempo); // Pausa entre cada fila de la matriz (ajusta esto según lo necesites)
+  }
+}
+
+// Derecha
+// Izquierda
+void imagen(char aled, char bled, char cled, char dled, char eled, char fled, char gled, char hled) {
+  // Aquí, se supone que cada parámetro (aled, bled, cled, etc.) representa el estado de un LED (0 o 1).
+  // Puedes ajustar esta función para que sea coherente con cómo se deben controlar los LEDs en tu matriz LED.
+
+  // Combinar los valores de los LEDs en un solo valor
+  int valorLEDs = aled | (bled << 1) | (cled << 2) | (dled << 3) | (eled << 4) | (fled << 5) | (gled << 6) | (hled << 7);
+  // Asegurarse de que los bits estén en el orden correcto (ajusta si es necesario)
+
+  valorLEDs = bitReverse(valorLEDs);
+
+  // Enviar el valor a la matriz LED
+  shiftOut(pinData, pinClock, LSBFIRST, valorLEDs);
+
+  
+  // Latch para mostrar los datos en la matriz
+  digitalWrite(pinLatch, HIGH);
+  digitalWrite(pinLatch, LOW);
+}
+
+// Función para invertir los bits de un byte (ajusta según sea necesario)
+byte bitReverse(byte x) {
+  byte b = 0;
+  for (int i = 0; i < 8; i++) {
+    b |= ((x >> i) & 1) << (7 - i);
+  }
+  return b;
+}
